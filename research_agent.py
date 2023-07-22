@@ -18,11 +18,12 @@ from bs4 import BeautifulSoup
 import requests
 import json
 from langchain.schema import SystemMessage
-from fastapi import FastAPI
+# from fastapi import FastAPI
 
 load_dotenv()
-brwoserless_api_key = os.getenv("BROWSERLESS_API_KEY")
-serper_api_key = os.getenv("SERP_API_KEY")
+browserless_api_key = os.environ["BROWSERLESS_API_KEY"]
+serper_api_key = os.environ['SERPAPI_API_KEY']
+
 
 # 1. Tool for search
 
@@ -67,7 +68,7 @@ def scrape_website(objective: str, url: str):
     data_json = json.dumps(data)
 
     # Send the POST request
-    post_url = f"https://chrome.browserless.io/content?token={brwoserless_api_key}"
+    post_url = f"https://chrome.browserless.io/content?token={browserless_api_key}"
     response = requests.post(post_url, headers=headers, data=data_json)
 
     # Check the response status code
@@ -173,6 +174,10 @@ agent = initialize_agent(
 )
 
 
+objective = "WHich parties funded the creation of the state of israel?"
+output = agent.run(objective)
+print(output)
+
 # 4. Use streamlit to create a web app
 # def main():
 #     st.set_page_config(page_title="AI research agent", page_icon=":bird:")
@@ -193,16 +198,16 @@ agent = initialize_agent(
 
 
 # 5. Set this as an API endpoint via FastAPI
-app = FastAPI()
+# app = FastAPI()
 
 
-class Query(BaseModel):
-    query: str
+# class Query(BaseModel):
+#     query: str
 
 
-@app.post("/")
-def researchAgent(query: Query):
-    query = query.query
-    content = agent({"input": query})
-    actual_content = content['output']
-    return actual_content
+# @app.post("/")
+# def researchAgent(query: Query):
+#     query = query.query
+#     content = agent({"input": query})
+#     actual_content = content['output']
+#     return actual_content
