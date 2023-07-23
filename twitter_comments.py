@@ -3,7 +3,6 @@ import time
 import os
 import openai
 
-
 # Load your API keys from environment variables
 openai.api_key = os.getenv("OPENAI_API_KEY")
 consumer_key = os.getenv("TWITTER_CONSUMER_KEY")

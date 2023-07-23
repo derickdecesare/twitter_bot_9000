@@ -2,76 +2,50 @@ from requests_oauthlib import OAuth1Session
 import os
 import json
 from dotenv import load_dotenv
-
-load_dotenv()
-
-consumer_key = os.environ["TWITTER_CONSUMER_KEY"]
-consumer_secret = os.environ["TWITTER_CONSUMER_SECRET"]
-
-print(consumer_key)
-print(consumer_secret)
+from research_agent import research_agent
 
 
-# Be sure to add replace the text of the with the text you wish to Tweet. You can also add parameters to post polls, quote Tweets, Tweet with reply settings, and Tweet to Super Followers in addition to other features.
-payload = {"text": "Hello world!"}
+def get_twitter_credentials():
+    consumer_key = os.environ.get("TWITTER_CONSUMER_KEY")
+    consumer_secret = os.environ.get("TWITTER_CONSUMER_SECRET")
+    return consumer_key, consumer_secret
 
-# Get request token
-request_token_url = "https://api.twitter.com/oauth/request_token?oauth_callback=oob&x_auth_access_type=write"
-oauth = OAuth1Session(consumer_key, client_secret=consumer_secret)
 
-try:
-    fetch_response = oauth.fetch_request_token(request_token_url)
-except ValueError:
-    print(
-        "There may have been an issue with the consumer_key or consumer_secret you entered."
-    )
+def post_tweet(consumer_key, consumer_secret, access_token, access_token_secret, tweet_text):
+    oauth = OAuth1Session(consumer_key, client_secret=consumer_secret,
+                          resource_owner_key=access_token, resource_owner_secret=access_token_secret)
+    payload = {"text": tweet_text}
 
-resource_owner_key = fetch_response.get("oauth_token")
-resource_owner_secret = fetch_response.get("oauth_token_secret")
-print("Got OAuth token: %s" % resource_owner_key)
+    response = oauth.post("https://api.twitter.com/2/tweets", json=payload)
 
-# Get authorization
-base_authorization_url = "https://api.twitter.com/oauth/authorize"
-authorization_url = oauth.authorization_url(base_authorization_url)
-print("Please go here and authorize: %s" % authorization_url)
-verifier = input("Paste the PIN here: ")
+    if response.status_code != 201:
+        raise Exception(
+            f"Request returned an error: {response.status_code} {response.text}")
 
-# Get the access token
-access_token_url = "https://api.twitter.com/oauth/access_token"
-oauth = OAuth1Session(
-    consumer_key,
-    client_secret=consumer_secret,
-    resource_owner_key=resource_owner_key,
-    resource_owner_secret=resource_owner_secret,
-    verifier=verifier,
-)
-oauth_tokens = oauth.fetch_access_token(access_token_url)
+    json_response = response.json()
+    print(json.dumps(json_response, indent=4, sort_keys=True))
 
-access_token = oauth_tokens["oauth_token"]
-access_token_secret = oauth_tokens["oauth_token_secret"]
 
-# Make the request
-oauth = OAuth1Session(
-    consumer_key,
-    client_secret=consumer_secret,
-    resource_owner_key=access_token,
-    resource_owner_secret=access_token_secret,
-)
+if __name__ == "__main__":
+    load_dotenv()
 
-# Making the request
-response = oauth.post(
-    "https://api.twitter.com/2/tweets",
-    json=payload,
-)
+    # Step 1: Call the API that will determine what our Twitter thread will be on today
+    # Assuming the API response is stored in the variable 'research_response'
+    # You should implement research_agent function
+    research_response = research_agent()
 
-if response.status_code != 201:
-    raise Exception(
-        "Request returned an error: {} {}".format(
-            response.status_code, response.text)
-    )
+    # Step 2: Use the response to call research agent (Not implemented in the provided code)
+    # research_to_api(api_url, research_response)
 
-print("Response code: {}".format(response.status_code))
+    # Step 3: Use research to write the thread (Not implemented in the provided code)
 
-# Saving the response as JSON
-json_response = response.json()
-print(json.dumps(json_response, indent=4, sort_keys=True))
+    # Step 4: Post the Twitter thread
+    consumer_key, consumer_secret = get_twitter_credentials()
+
+    # You need to obtain access_token and access_token_secret using the OAuth process (Not implemented in the provided code)
+    access_token = "YOUR_ACCESS_TOKEN"
+    access_token_secret = "YOUR_ACCESS_TOKEN_SECRET"
+
+    tweet_text = "Hello world!"  # Replace this with the actual tweet content
+    post_tweet(consumer_key, consumer_secret, access_token,
+               access_token_secret, tweet_text)

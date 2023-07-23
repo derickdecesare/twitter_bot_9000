@@ -1,5 +1,4 @@
-## This is the code for the research agent
-
+# This is the code for the research agent
 import os
 from dotenv import load_dotenv
 
@@ -211,3 +210,7 @@ print(output)
 #     content = agent({"input": query})
 #     actual_content = content['output']
 #     return actual_content
+
+def research_agent(objective):
+    output = agent.run(objective)
+    return output
