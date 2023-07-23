@@ -9,6 +9,7 @@ from langchain.prompts.chat import (
 )
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from pyairtable import Table
+import ast
 load_dotenv()
 
 airtable_api_key = os.environ["AIRTABLE_API_KEY"]
@@ -36,7 +37,7 @@ These trends indicate the evolving landscape of the AI startup ecosystem, with a
 Reference:
 - Article: [The AI Startup Boom: Analyzing the Latest Trends and Investment Opportunities](https://ts2.space/en/the-ai-startup-boom-analyzing-the-latest-trends-and-investment-opportunities/)"""
 
-def generate_thread(research, subject):
+def generate_thread(research, subject, airtable_id):
 
     print("generating thread...")
 
@@ -51,9 +52,26 @@ def generate_thread(research, subject):
 
     response = llm(messages)
     response_content = response.content
+
+    # add to airtable
+    print("Adding idea to airtable...")
+    thread_data = {
+        "Thread": response_content,
+    }
+    table.update(airtable_id, thread_data)
+
+    # Convert string representation of list to list
+    response_content = ast.literal_eval(response_content)
+    
+
     return response_content
 
 
-thread = generate_thread(example_research, "AI startups")
+# thread = generate_thread(example_research, "AI startups", 0)
 
-print(thread)
+# print(thread)
+
+# print("tweet 1", thread[0])
+# print("tweet 2", thread[1])
+# print("tweet 3", thread[2])
+

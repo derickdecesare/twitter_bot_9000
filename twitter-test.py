@@ -3,13 +3,9 @@ import os
 import json
 from dotenv import load_dotenv
 import tweepy
-# Import the research_agent module
 from research_agent import research_agent
 from idea_agent import generate_idea
-
-
-
-
+from thread_agent import generate_thread
 load_dotenv()
 
 consumer_key = os.environ["TWITTER_CONSUMER_KEY"]
@@ -28,7 +24,9 @@ print(twitter_bearer_token)
 # Step 1. Have gpt generate a new idea for the research agent to research -- and store then in airtable so we can reference them later (idea_agent.py) ✅
 ##########
 
-idea = generate_idea("AI startups")
+subject = "AI startups"
+
+idea = generate_idea(subject)
 
 print("idea from generate_idea========>", idea["idea"])
 print("airtable_id from generate_idea========>", idea["airtable_id"])
@@ -48,8 +46,17 @@ print("response from research_agent========>", research_response)
 # Step 3. Based on response from research agent use GPT to write a thread with emojis 
 ##########
 
+formatted_research = f"""{research_response}"""
 
-# call a function here to get the response from the thread_writer_agent ===> should be returned as a list of strings (each string is a tweet less than 280 characters) set that equal to tweets variable
+tweets = generate_thread(formatted_research, subject, idea["airtable_id"])
+
+
+print("tweets from generate_thread========>", tweets)
+
+
+# print("tweet 1", tweets[0])
+# print("tweet 2", tweets[1])
+# print("tweet 3", tweets[2])
 
 
 #########
@@ -58,6 +65,34 @@ print("response from research_agent========>", research_response)
 
 
 
+def post_to_twitter(tweets):
+    client = tweepy.Client(bearer_token=twitter_bearer_token,
+                        consumer_key=consumer_key,
+                        consumer_secret=consumer_secret,
+                        access_token=access_token,
+                        access_token_secret=access_token_secret,
+                        wait_on_rate_limit=True)
+
+    ## character limit is 280 so we'll need to split it up into multiple tweets
+    # The text of your tweets.
+    # tweets = ["Another super unique Test thread 1.", "Another super unique Test thread 2.", " Another super unique Test thread 3."]
+
+    # Get authenticated user's info
+    # user = client.get_me()
+
+    # Post the first tweet.
+    tweet = client.create_tweet(text=tweets[0])
+
+    print("TWEET RESPONSE========>", tweet)
+
+    # Post the other tweets, each in reply to the previous one.
+    for i in range(1, len(tweets)):
+        reply_text = f"{tweets[i]}"
+        print("REPLY TEXT========>", reply_text)
+        tweet = client.create_tweet(text=reply_text, in_reply_to_tweet_id=tweet.data['id'])
+        print("TWEET RESPONSE========>", tweet)
+
+post_to_twitter(tweets)
 
 # Be sure to add replace the text of the with the text you wish to Tweet. You can also add parameters to post polls, quote Tweets, Tweet with reply settings, and Tweet to Super Followers in addition to other features.
 # payload = {"text": "Test from twitter API"}
@@ -138,28 +173,3 @@ print("response from research_agent========>", research_response)
 
 
 
-# client = tweepy.Client(bearer_token=twitter_bearer_token,
-#                        consumer_key=consumer_key,
-#                        consumer_secret=consumer_secret,
-#                        access_token=access_token,
-#                        access_token_secret=access_token_secret,
-#                        wait_on_rate_limit=True)
-
-# ## character limit is 280 so we'll need to split it up into multiple tweets
-# # The text of your tweets.
-# tweets = ["Another super unique Test thread 1.", "Another super unique Test thread 2.", " Another super unique Test thread 3."]
-
-# # Get authenticated user's info
-# user = client.get_me()
-
-# # Post the first tweet.
-# tweet = client.create_tweet(text=tweets[0])
-
-# print("TWEET RESPONSE========>", tweet)
-
-# # Post the other tweets, each in reply to the previous one.
-# for i in range(1, len(tweets)):
-#     reply_text = f"{tweets[i]}"
-#     print("REPLY TEXT========>", reply_text)
-#     tweet = client.create_tweet(text=reply_text, in_reply_to_tweet_id=tweet.data['id'])
-#     print("TWEET RESPONSE========>", tweet)

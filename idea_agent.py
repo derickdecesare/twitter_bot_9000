@@ -80,7 +80,7 @@ def generate_idea(topic):
     llm = ChatOpenAI(temperature=0, model_name='gpt-4')
 
     messages = [
-    SystemMessage(content="You are an expert writer that generates one unique, high quality idea for a Twitter thread that will be engaging."),
+    SystemMessage(content="You are an expert writer that generates one unique, high quality idea for a Twitter thread that will be engaging. Your idea is not politcal or dealing with ethics."),
     HumanMessage(content=f"Here are the list of previous ideas you have generated {existing_ideas}. \n\nPlease generate a new, unique, high quality twitter thread idea on the topic of {topic}. The idea should be short and succinct, ideally in less than ten words. Please format without any punctuation or quotation marks.")
     ]
 
