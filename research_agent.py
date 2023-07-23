@@ -18,11 +18,15 @@ from bs4 import BeautifulSoup
 import requests
 import json
 from langchain.schema import SystemMessage
+from pyairtable import Table
 # from fastapi import FastAPI
 
 load_dotenv()
 browserless_api_key = os.environ["BROWSERLESS_API_KEY"]
 serper_api_key = os.environ['SERPAPI_API_KEY']
+airtable_api_key = os.environ["AIRTABLE_API_KEY"]
+base_id = os.environ["AIRTABLE_BASE_ID"]
+table_name = os.environ["AIRTABLE_TABLE_NAME"]
 
 
 # 1. Tool for search
@@ -174,9 +178,24 @@ agent = initialize_agent(
 )
 
 
-objective = "WHich parties funded the creation of the state of israel?"
-output = agent.run(objective)
-print(output)
+
+def research_agent(idea, airtable_id):
+    # run the agent to do research
+    output = agent.run(idea)
+
+    # add research to airtable in the Research field
+    table = Table(airtable_api_key, base_id, table_name)
+
+    research_data = {
+    "Research": output,
+    }
+    table.update(airtable_id, research_data)
+
+    return output
+
+# objective = "WHich parties funded the creation of the state of israel?"
+# output = agent.run(objective)
+# print(output)
 
 # 4. Use streamlit to create a web app
 # def main():

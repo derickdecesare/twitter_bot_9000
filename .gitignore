@@ -1,2 +1,5 @@
 /twitterbot
 .env
+
+__pycache__/
+```
